@@ -1,0 +1,45 @@
+%MERGREDSET 
+
+dir = '/Users/LysanneGroenewegen1/STUDIE/RM/Jaar 2/THESIS/MATLAB/OneDrive_1_1-3-2022'
+
+fnames = {'ANL_aaaaaaeb_1.vhdr' 'ANL_aaaaaaeb_2.vhdr' 'ANL_aaaaaaeb_3.vhdr'};
+
+for i = 1:length(fnames)
+   fprintf(' Loading file %s \n',fnames{i})
+   data(i) = pop_loadbv(fullfile(dir,fnames{i})); 
+end
+
+ALLEEG = pop_mergeset(data, [1:length(data)],1)
+
+%preprocessing
+
+%remove non channels
+ALLEEG = pop_select(ALLEEG, 'nochannel',{'P0','P1','P2'});
+   
+%remove bad channels
+ALLEEG = pop_clean_rawdata(ALLEEG, 'FlatlineCriterion',5,'ChannelCriterion',0.8,'LineNoiseCriterion',4,'Highpass',[0.25 0.75] ,'BurstCriterion','off','WindowCriterion','off','BurstRejection','off','Distance','Euclidian');
+
+%Pick the average reference electrode in this step 
+ALLEEG = pop_reref( ALLEEG, [],'interpchan',[]);
+
+%set the basic filter 1 - 40 
+ALLEEG = pop_eegfiltnew(ALLEEG, 'locutoff',1,'hicutoff',40,'plotfreqz',1);
+ALLEEG = eeg_checkset( ALLEEG );
+
+%Run the first ICA with default settings
+ALLEEG = pop_runica(ALLEEG, 'icatype', 'runica', 'extended',1,'pca',-1,'interrupt','on');
+
+%remove more bad components automatically 
+ALLEEG = pop_iclabel(ALLEEG, 'default');
+ALLEEG = pop_icflag(ALLEEG, [NaN NaN;0.9 1;0.9 1;NaN NaN;NaN NaN;NaN NaN;NaN NaN]);
+ALLEEG = pop_subcomp( ALLEEG, [12], 0);
+
+%look at the data, scroll data and spectral plots 
+ALLEEG = eeg_checkset( ALLEEG );
+     pop_eegplot( ALLEEG, 0, 1, 1);
+     figure; pop_spectopo(ALLEEG, 0, [0  3698679], 'EEG' , 'freq', [10], 'plotchan', 0, 'percent', 20, 'icacomps', [1:67], 'nicamaps', 5, 'freqrange',[2 25],'electrodes','off');
+
+%Remove bad channels more strictly 
+ALLEEG = pop_clean_rawdata(ALLEEG, 'FlatlineCriterion','off','ChannelCriterion','off','LineNoiseCriterion','off','Highpass','off','BurstCriterion',20,'WindowCriterion',0.25,'BurstRejection','on','Distance','Euclidian','WindowCriterionTolerances',[-Inf 7] );
+     ALLEEG = eeg_checkset( ALLEEG );
+     pop_eegplot( ALLEEG, 1, 1, 1);
