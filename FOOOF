@@ -1,0 +1,50 @@
+%FOOOF bilateral
+%selecting clusters of electrodes 
+AF = ALLEEG.icaact(22,:),ALLEEG.icaact(23,:),ALLEEG.icaact(24,:),ALLEEG.icaact(25,:),ALLEEG.icaact(26,:),ALLEEG.icaact(27,:),ALLEEG.icaact(28,:),ALLEEG.icaact(29,:)
+F = ALLEEG.icaact(30,:),ALLEEG.icaact(31,:),ALLEEG.icaact(32,:),ALLEEG.icaact(33,:),ALLEEG.icaact(34,:),ALLEEG.icaact(35,:),ALLEEG.icaact(36,:),ALLEEG.icaact(37,:),ALLEEG.icaact(38,:)
+FC = ALLEEG.icaact(1,:),ALLEEG.icaact(2,:),ALLEEG.icaact(3,:),ALLEEG.icaact(4,:),ALLEEG.icaact(5,:),ALLEEG.icaact(6,:),ALLEEG.icaact(7,:)
+C = ALLEEG.icaact(8,:),ALLEEG.icaact(9,:),ALLEEG.icaact(10,:),ALLEEG.icaact(11,:),ALLEEG.icaact(12,:),ALLEEG.icaact(13,:),ALLEEG.icaact(14,:)
+FT = ALLEEG.icaact(39,:),ALLEEG.icaact(40,:)
+T = ALLEEG.icaact(43,:),ALLEEG.icaact(41,:),ALLEEG.icaact(42,:),ALLEEG.icaact(44,:)
+TP = ALLEEG.icaact(45,:),ALLEEG.icaact(46,:)
+CP = ALLEEG.icaact(15,:),ALLEEG.icaact(16,:),ALLEEG.icaact(17,:),ALLEEG.icaact(18,:),ALLEEG.icaact(19,:),ALLEEG.icaact(20,:),ALLEEG.icaact(21,:)
+P = ALLEEG.icaact(47,:),ALLEEG.icaact(48,:),ALLEEG.icaact(49,:),ALLEEG.icaact(50,:),ALLEEG.icaact(51,:),ALLEEG.icaact(52,:),ALLEEG.icaact(53,:),ALLEEG.icaact(54,:),ALLEEG.icaact(55,:)
+PO = ALLEEG.icaact(56,:),ALLEEG.icaact(57,:),ALLEEG.icaact(58,:),ALLEEG.icaact(59,:)
+O = ALLEEG.icaact(61,:)
+
+
+BilateralFOOOF = {AF, C, CP, F, FC, FT, O, P, PO, T, TP}
+for i = 1:length(BilateralFOOOF)
+    [psd, freqs] = pwelch(BilateralFOOOF{i}, 500, [], [], s_rate);
+    freqs = freqs';
+    psd = psd';
+    settings = struct();  % Use defaults
+    f_range = [1, 40];
+    fooof_results{i} = fooof(freqs, psd, f_range, settings, true)
+end
+
+%Events 
+ALLEEGEVENTS = pop_rmdat( ALLEEG, {'S  1','S  2','S  4'},[-1 1] ,0);
+S1 = pop_rmdat( ALLEEG, {'S  1'},[-1 1] ,0);
+S2 = pop_rmdat( ALLEEG, {'S  2'},[-1 1] ,0); 
+S4 = pop_rmdat( ALLEEG, {'S  4'},[-1 1] ,0); 
+
+% Calculate a power spectrum with Welch's method
+s_rate = 1000
+[psd, freqs] = pwelch(ALLEEGEVENTS.data, 60, [], [], s_rate);
+[psd, freqs] = pwelch(S1.icaact, 500, [], [], s_rate);
+
+% Transpose, to make inputs row vectors
+freqs = freqs';
+psd = psd';
+
+% FOOOF settings
+settings = struct();  % Use defaults
+f_range = [1, 40];
+
+% Run FOOOF
+fooof_results = fooof(freqs, psd, f_range, settings, true);
+
+% Print out the FOOOF Results
+fooof_results
+fooof_plot(fooof_results)
