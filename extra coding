@@ -1,0 +1,505 @@
+clear;clc;
+
+%close the EEGlab
+eeglab
+
+%import the datasets 
+EEG = pop_loadbv('/Users/LysanneGroenewegen1/STUDIE/RM/Jaar 2/THESIS/MATLAB/OneDrive_1_1-3-2022/','ANL_aaaaaaeb_1.vhdr', [1 3698680], [1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36 37 38 39 40 41 42 43 44 45 46 47 48 49 50 51 52 53 54 55 56 57 58 59 60 61 62 63 64 65 66 67]);
+     EEG.setname='data1';
+EEG = pop_loadbv('/Users/LysanneGroenewegen1/STUDIE/RM/Jaar 2/THESIS/MATLAB/OneDrive_1_1-3-2022/','ANL_aaaaaaeb_2.vhdr')
+EEG = pop_loadbv('/Users/LysanneGroenewegen1/STUDIE/RM/Jaar 2/THESIS/MATLAB/OneDrive_1_1-3-2022/','ANL_aaaaaaeb_3.vhdr')
+
+%merge dataset (active and passive stimulation)
+fnames = ('')
+
+%extract 
+%select individual components to remove from dataset (p0 = bend sensor, p1
+%= light sensor and p2 = sensor attached to screen) and check data again
+EEG = pop_select(EEG, 'nochannel',{'P0','P1','P2'});
+
+%remove bad channels
+EEG = pop_clean_rawdata(EEG, 'FlatlineCriterion',5,'ChannelCriterion',0.8,'LineNoiseCriterion',4,'Highpass',[0.25 0.75] ,'BurstCriterion','off','WindowCriterion','off','BurstRejection','off','Distance','Euclidian');
+
+%Pick the average reference electrode in this step 
+EEG = pop_reref( EEG, [],'interpchan',[]);
+
+%When plotting the data (scrolling plot) click display: remove DC offset
+pop_eegplot( EEG, 1, 1, 1);
+
+%set the basic filter 1 - 40 
+EEG = pop_eegfiltnew(EEG, 'locutoff',1,'hicutoff',40,'plotfreqz',1);
+EEG = eeg_checkset( EEG );
+
+%Run the first ICA with default settings
+EEG = pop_runica(EEG, 'icatype', 'runica', 'extended',1,'pca',-1,'interrupt','on');
+
+%remove more bad components automatically 
+EEG = pop_iclabel(EEG, 'default');
+EEG = pop_icflag(EEG, [NaN NaN;0.9 1;0.9 1;NaN NaN;NaN NaN;NaN NaN;NaN NaN]);
+EEG = pop_subcomp( EEG, [12], 0);
+
+%look at the data, scroll data and spectral plots 
+EEG = eeg_checkset( EEG );
+     pop_eegplot( EEG, 0, 1, 1);
+     figure; pop_spectopo(EEG, 0, [0  3698679], 'EEG' , 'freq', [10], 'plotchan', 0, 'percent', 20, 'icacomps', [1:67], 'nicamaps', 5, 'freqrange',[2 25],'electrodes','off');
+
+%Remove bad channels more strictly 
+EEG = pop_clean_rawdata(EEG, 'FlatlineCriterion','off','ChannelCriterion','off','LineNoiseCriterion','off','Highpass','off','BurstCriterion',20,'WindowCriterion',0.25,'BurstRejection','on','Distance','Euclidian','WindowCriterionTolerances',[-Inf 7] );
+     EEG = eeg_checkset( EEG );
+     pop_eegplot( EEG, 1, 1, 1);
+
+%open finished preprocessing set
+%tapping.set
+Mergedset = {'tappingset1.set' 'finished preprocessing set .set'};
+
+%FOOOF bilateral
+%selecting clusters of electrodes 
+AF = EEG.icaact(22,:),EEG.icaact(23,:),EEG.icaact(24,:),EEG.icaact(25,:),EEG.icaact(26,:),EEG.icaact(27,:),EEG.icaact(28,:),EEG.icaact(29,:)
+F = EEG.icaact(30,:),EEG.icaact(31,:),EEG.icaact(32,:),EEG.icaact(33,:),EEG.icaact(34,:),EEG.icaact(35,:),EEG.icaact(36,:),EEG.icaact(37,:),EEG.icaact(38,:)
+FC = EEG.icaact(1,:),EEG.icaact(2,:),EEG.icaact(3,:),EEG.icaact(4,:),EEG.icaact(5,:),EEG.icaact(6,:),EEG.icaact(7,:)
+C = EEG.icaact(8,:),EEG.icaact(9,:),EEG.icaact(10,:),EEG.icaact(11,:),EEG.icaact(12,:),EEG.icaact(13,:),EEG.icaact(14,:)
+FT = EEG.icaact(39,:),EEG.icaact(40,:)
+T = EEG.icaact(43,:),EEG.icaact(41,:),EEG.icaact(42,:),EEG.icaact(44,:)
+TP = EEG.icaact(45,:),EEG.icaact(46,:)
+CP = EEG.icaact(15,:),EEG.icaact(16,:),EEG.icaact(17,:),EEG.icaact(18,:),EEG.icaact(19,:),EEG.icaact(20,:),EEG.icaact(21,:)
+P = EEG.icaact(47,:),EEG.icaact(48,:),EEG.icaact(49,:),EEG.icaact(50,:),EEG.icaact(51,:),EEG.icaact(52,:),EEG.icaact(53,:),EEG.icaact(54,:),EEG.icaact(55,:)
+PO = EEG.icaact(56,:),EEG.icaact(57,:),EEG.icaact(58,:),EEG.icaact(59,:)
+O = EEG.icaact(61,:)
+
+%FOOOF 
+%selecting contralateral electrodes (right)
+CRAF = EEG.icaact(23,:),EEG.icaact(24,:),EEG.icaact(28,:),EEG.icaact(29,:)
+CRF = EEG.icaact(34,:),EEG.icaact(35,:),EEG.icaact(36,:),EEG.icaact(37,:),EEG.icaact(38,:)
+CRFC = EEG.icaact(4,:),EEG.icaact(5,:),EEG.icaact(6,:),EEG.icaact(7,:)
+CRC = EEG.icaact(11,:),EEG.icaact(12,:),EEG.icaact(13,:),EEG.icaact(14,:)
+CRFT = EEG.icaact(40,:)
+CRT = EEG.icaact(42,:),EEG.icaact(44,:)
+CRTP = EEG.icaact(46,:)
+CRCP = EEG.icaact(18,:),EEG.icaact(19,:),EEG.icaact(20,:),EEG.icaact(21,:)
+CRP = EEG.icaact(51,:),EEG.icaact(52,:),EEG.icaact(53,:),EEG.icaact(54,:),EEG.icaact(55,:)
+CRPO = EEG.icaact(58,:),EEG.icaact(59,:)
+CRO = EEG.icaact(61,:)
+
+%FOOOF
+%selecting contralateral electrodes (left)
+CLAF = EEG.icaact(22,:),EEG.icaact(23,:),EEG.icaact(25,:),EEG.icaact(26,:),EEG.icaact(27,:)
+CLF = EEG.icaact(30,:),EEG.icaact(31,:),EEG.icaact(32,:),EEG.icaact(33,:)
+CLFC = EEG.icaact(1,:),EEG.icaact(2,:),EEG.icaact(3,:),EEG.icaact(4,:)
+CLC = EEG.icaact(8,:),EEG.icaact(9,:),EEG.icaact(10,:),EEG.icaact(11,:)
+CLFT = EEG.icaact(39,:)
+CLT = EEG.icaact(43,:),EEG.icaact(41,:)
+CLTP = EEG.icaact(45,:)
+CLCP = EEG.icaact(15,:),EEG.icaact(16,:),EEG.icaact(17,:),EEG.icaact(18,:)
+CLP = EEG.icaact(47,:),EEG.icaact(48,:),EEG.icaact(49,:),EEG.icaact(50,:),EEG.icaact(51,:)
+CLPO = EEG.icaact(56,:),EEG.icaact(57,:)
+CLO = EEG.icaact(61,:)
+
+%milisecond steps of the log power
+s_rate = 1000
+
+%1 = Anterior frontal
+%2 = Central 
+%3 = Central Parietal 
+%4 = Frontal
+%5 = Frontal central 
+%6 = Frontal Temporal 
+%7 = Occipital 
+%8 = Parietal
+%9 = Parietal Occipital 
+%10 = Temporal 
+%11 = Temopral Parietal 
+
+BilateralFOOOF = {AF, C, CP, F, FC, FT, O, P, PO, T, TP}
+for i = 1:length(BilateralFOOOF)
+    [psd, freqs] = pwelch(BilateralFOOOF{i}, 500, [], [], s_rate);
+    freqs = freqs';
+    psd = psd';
+    settings = struct();  % Use defaults
+    f_range = [1, 40];
+    fooof_results{i} = fooof(freqs, psd, f_range, settings, true)
+    fooof_plot(fooof_results{i})
+    title(sprintf('BilateralFOOOF%d',i))
+end
+
+%right FOOOF
+RightFOOOF = {CRAF, CRC, CRCP, CRF, CRFC, CRFT, CRO, CRP, CRPO, CRT, CRTP}
+for r = 1:length(RightFOOOF)
+    [psd, freqs] = pwelch(RightFOOOF{r}, 500, [], [], s_rate);
+    freqs = freqs';
+    psd = psd';
+    settings = struct();  % Use defaults
+    f_range = [1, 40];
+    fooof_resultsActiveRight{r} = fooof(freqs, psd, f_range, settings, true)
+    fooof_plot(fooof_results{r})
+    title(sprintf('RightFOOOF%d',r))
+end
+
+%Left FOOOF
+LeftFOOOF = {CLAF, CLC, CLCP, CLF, CLFC, CRFT, CLO, CLP, CLPO, CLT, CLTP}
+for l = 1:length(LeftFOOOF)
+    [psd, freqs] = pwelch(LeftFOOOF{l}, 500, [], [], s_rate);
+    freqs = freqs';
+    psd = psd';
+    settings = struct();  % Use defaults
+    f_range = [1, 40];
+    fooof_resultsActiveLeft{l} = fooof(freqs, psd, f_range, settings, true)
+    fooof_plot(fooof_results{l})
+    title(sprintf('LeftFOOOF%d',l))
+end
+
+%Names for aperiodic fit 
+%bilateral
+AFActiveAF = fooof_results{1, 1}.ap_fit
+AFActiveC = fooof_results{1, 2}.ap_fit
+AFActiveCP = fooof_results{1, 3}.ap_fit
+AFActiveF = fooof_results{1, 4}.ap_fit
+AFActiveFC = fooof_results{1, 5}.ap_fit
+AFActiveFT = fooof_results{1, 6}.ap_fit
+AFActiveO = fooof_results{1, 7}.ap_fit
+AFActiveP = fooof_results{1, 8}.ap_fit
+AFActivePO = fooof_results{1, 9}.ap_fit
+AFActiveT = fooof_results{1, 10}.ap_fit
+AFActiveTP = fooof_results{1, 11}.ap_fit
+
+%RightFOOOF
+AFActiveCRAF = fooof_resultsActiveRight{1, 1}.ap_fit
+AFActiveCRC = fooof_resultsActiveRight{1, 2}.ap_fit
+AFActiveCRCP = fooof_resultsActiveRight{1, 3}.ap_fit
+AFActiveCRF = fooof_resultsActiveRight{1, 4}.ap_fit
+AFActiveCRFC = fooof_resultsActiveRight{1,51}.ap_fit
+AFActiveCRFT = fooof_resultsActiveRight{1, 6}.ap_fit
+AFActiveCRO = fooof_resultsActiveRight{1, 7}.ap_fit
+AFActiveCRP = fooof_resultsActiveRight{1, 8}.ap_fit
+AFActiveCRPO = fooof_resultsActiveRight{1, 9}.ap_fit
+AFActiveCRT = fooof_resultsActiveRight{1, 10}.ap_fit
+AFActiveCRTP = fooof_resultsActiveRight{1, 11}.ap_fit
+
+%LeftFOOOF
+AFActiveCLAF = fooof_resultsActiveLeft{1, 1}.ap_fit
+AFActiveCLC = fooof_resultsActiveLeft{1, 2}.ap_fit
+AFActiveCLCP = fooof_resultsActiveLeft{1, 3}.ap_fit
+AFActiveCLF = fooof_resultsActiveLeft{1, 4}.ap_fit
+AFActiveCLFC = fooof_resultsActiveLeft{1, 5}.ap_fit
+AFActiveCLFT = fooof_resultsActiveLeft{1, 6}.ap_fit
+AFActiveCLO = fooof_resultsActiveLeft{1, 7}.ap_fit
+AFActiveCLP = fooof_resultsActiveLeft{1, 8}.ap_fit
+AFActiveCLPO = fooof_resultsActiveLeft{1, 9}.ap_fit
+AFActiveCLT = fooof_resultsActiveLeft{1, 10}.ap_fit
+AFActiveCLTP = fooof_resultsActiveLeft{1, 11}.ap_fit
+
+%Passive dataset 
+%select events
+ALLS = pop_rmdat( EEG, {'S  1','S  2','S  4'},[-1 1] ,0);
+S1 = pop_rmdat( EEG, {'S  1'},[-1 1] ,0);
+S2 = pop_rmdat( EEG, {'S  2'},[-1 1] ,0); 
+S4 = pop_rmdat( EEG, {'S  4'},[-1 1] ,0); 
+
+%FOOOF for ALLS
+%Bilateral
+ALLSAF = ALLS.icaact(22,:),ALLS.icaact(23,:),ALLS.icaact(24,:),ALLS.icaact(25,:),ALLS.icaact(26,:),ALLS.icaact(27,:),ALLS.icaact(28,:),ALLS.icaact(29,:)
+ALLSF = ALLS.icaact(30,:),ALLS.icaact(31,:),ALLS.icaact(32,:),ALLS.icaact(33,:),ALLS.icaact(34,:),ALLS.icaact(35,:),ALLS.icaact(36,:),ALLS.icaact(37,:),ALLS.icaact(38,:)
+ALLSFC = ALLS.icaact(1,:),ALLS.icaact(2,:),ALLS.icaact(3,:),ALLS.icaact(4,:),ALLS.icaact(5,:),ALLS.icaact(6,:),ALLS.icaact(7,:)
+ALLSC = ALLS.icaact(8,:),ALLS.icaact(9,:),ALLS.icaact(10,:),ALLS.icaact(11,:),ALLS.icaact(12,:),ALLS.icaact(13,:),ALLS.icaact(14,:)
+ALLSFT = ALLS.icaact(39,:),ALLS.icaact(40,:)
+ALLST = ALLS.icaact(43,:),ALLS.icaact(41,:),ALLS.icaact(42,:),ALLS.icaact(44,:)
+ALLSTP = ALLS.icaact(45,:),ALLS.icaact(46,:)
+ALLSCP = ALLS.icaact(15,:),ALLS.icaact(16,:),ALLS.icaact(17,:),ALLS.icaact(18,:),ALLS.icaact(19,:),ALLS.icaact(20,:),ALLS.icaact(21,:)
+ALLSP = ALLS.icaact(47,:),ALLS.icaact(48,:),ALLS.icaact(49,:),ALLS.icaact(50,:),ALLS.icaact(51,:),ALLS.icaact(52,:),ALLS.icaact(53,:),ALLS.icaact(54,:),ALLS.icaact(55,:)
+ALLSPO = ALLS.icaact(56,:),ALLS.icaact(57,:),ALLS.icaact(58,:),ALLS.icaact(59,:)
+ALLSO = ALLS.icaact(61,:)
+
+ALLSBIFOOOF = {ALLSAF, ALLSF, ALLSFC, ALLSC, ALLSFT, ALLST, ALLSTP, ALLSCP, ALLSP, ALLSPO, ALLSO}
+for a = 1:length(ALLSBIFOOOF)
+    [psd, freqs] = pwelch(ALLSBIFOOOF{a}, 500, [], [], s_rate);
+    freqs = freqs';
+    psd = psd';
+    settings = struct();  % Use defaults
+    f_range = [1, 40];
+    fooof_results{a} = fooof(freqs, psd, f_range, settings, true)
+    fooof_plot(fooof_results{a})
+    title(sprintf('ALLSBIFOOOF%d',a))
+end
+
+%selecting passive task contralateral electrodes (right) for all events
+ALLSCRAF = ALLS.icaact(23,:),ALLS.icaact(24,:),ALLS.icaact(28,:),ALLS.icaact(29,:)
+ALLSCRF = ALLS.icaact(34,:),ALLS.icaact(35,:),ALLS.icaact(36,:),ALLS.icaact(37,:),ALLS.icaact(38,:)
+ALLSCRFC = ALLS.icaact(4,:),ALLS.icaact(5,:),ALLS.icaact(6,:),ALLS.icaact(7,:)
+ALLSCRC = ALLS.icaact(11,:),ALLS.icaact(12,:),ALLS.icaact(13,:),ALLS.icaact(14,:)
+ALLSCRFT = ALLS.icaact(40,:)
+ALLSCRT = ALLS.icaact(42,:),ALLS.icaact(44,:)
+ALLSCRTP = ALLS.icaact(46,:)
+ALLSCRCP = ALLS.icaact(18,:),ALLS.icaact(19,:),ALLS.icaact(20,:),ALLS.icaact(21,:)
+ALLSCRP = ALLS.icaact(51,:),ALLS.icaact(52,:),ALLS.icaact(53,:),ALLS.icaact(54,:),ALLS.icaact(55,:)
+ALLSCRPO = ALLS.icaact(58,:),ALLS.icaact(59,:)
+ALLSCRO = ALLS.icaact(61,:)
+
+ALLSRightFOOOF = {ALLSCRAF, ALLSCRF, ALLSCRFC, ALLSCRC, ALLSCRFT, ALLSCRT, ALLSCRTP, ALLSCRCP, ALLSCRP, ALLSCRPO, ALLSCRO}
+for p = 1:length(ALLSRightFOOOF)
+    [psd, freqs] = pwelch(ALLSRightFOOOF{p}, 500, [], [], s_rate);
+    freqs = freqs';
+    psd = psd';
+    settings = struct();  % Use defaults
+    f_range = [1, 40];
+    fooof_results{p} = fooof(freqs, psd, f_range, settings, true)
+    fooof_plot(fooof_results{p})
+    title(sprintf('ALLSRightFOOOF%d',p))
+end
+
+%selecting contralateral electrodes for passive all events  (left)
+ALLSCLAF = ALLS.icaact(22,:),ALLS.icaact(23,:),ALLS.icaact(25,:),ALLS.icaact(26,:),ALLS.icaact(27,:)
+ALLSCLF = ALLS.icaact(30,:),ALLS.icaact(31,:),ALLS.icaact(32,:),ALLS.icaact(33,:)
+ALLSLFC = ALLS.icaact(1,:),ALLS.icaact(2,:),ALLS.icaact(3,:),ALLS.icaact(4,:)
+ALLSCLC = ALLS.icaact(8,:),ALLS.icaact(9,:),ALLS.icaact(10,:),ALLS.icaact(11,:)
+ALLSCLFT = ALLS.icaact(39,:)
+ALLSCLT = ALLS.icaact(43,:),ALLS.icaact(41,:)
+ALLSCLTP = ALLS.icaact(45,:)
+ALLSCLCP = ALLS.icaact(15,:),ALLS.icaact(16,:),ALLS.icaact(17,:),ALLS.icaact(18,:)
+ALLSCLP = ALLS.icaact(47,:),ALLS.icaact(48,:),ALLS.icaact(49,:),ALLS.icaact(50,:),ALLS.icaact(51,:)
+ALLSCLPO = ALLS.icaact(56,:),ALLS.icaact(57,:)
+ALLSCLO = ALLS.icaact(61,:)
+
+ALLSLeftFOOOF = {ALLSCLAF, ALLSCLF, ALLSLFC, ALLSCLC, ALLSCLFT, ALLSCLT, ALLSCLTP, ALLSCLCP, ALLSCLP, ALLSCLPO, ALLSCLO}
+for s = 1:length(ALLSLeftFOOOF)
+    [psd, freqs] = pwelch(ALLSLeftFOOOF{s}, 500, [], [], s_rate);
+    freqs = freqs';
+    psd = psd';
+    settings = struct();  % Use defaults
+    f_range = [1, 40];
+    fooof_results{s} = fooof(freqs, psd, f_range, settings, true)
+    fooof_plot(fooof_results{s})
+    title(sprintf('ALLSLeftFOOOF%d',s))
+end
+
+
+
+%FOOOF S1
+%%selecting ALL electrodes for passive S1 event 
+S1AF = S1.icaact(22,:),S1.icaact(23,:),S1.icaact(24,:),S1.icaact(25,:),S1.icaact(26,:),S1.icaact(27,:),S1.icaact(28,:),S1.icaact(29,:)
+S1SF = S1.icaact(30,:),S1.icaact(31,:),S1.icaact(32,:),S1.icaact(33,:),S1.icaact(34,:),S1.icaact(35,:),S1.icaact(36,:),S1.icaact(37,:),S1.icaact(38,:)
+S1SFC = S1.icaact(1,:),S1.icaact(2,:),S1.icaact(3,:),S1.icaact(4,:),S1.icaact(5,:),S1.icaact(6,:),S1.icaact(7,:)
+S1SC = S1.icaact(8,:),S1.icaact(9,:),S1.icaact(10,:),S1.icaact(11,:),S1.icaact(12,:),S1.icaact(13,:),S1.icaact(14,:)
+S1SFT = S1.icaact(39,:),S1.icaact(40,:)
+S1ST = S1.icaact(43,:),S1.icaact(41,:),S1.icaact(42,:),S1.icaact(44,:)
+S1STP = S1.icaact(45,:),S1.icaact(46,:)
+S1SCP = S1.icaact(15,:),S1.icaact(16,:),S1.icaact(17,:),S1.icaact(18,:),S1.icaact(19,:),S1.icaact(20,:),S1.icaact(21,:)
+S1SP = S1.icaact(47,:),S1.icaact(48,:),S1.icaact(49,:),S1.icaact(50,:),S1.icaact(51,:),S1.icaact(52,:),S1.icaact(53,:),S1.icaact(54,:),S1.icaact(55,:)
+S1SPO = S1.icaact(56,:),S1.icaact(57,:),S1.icaact(58,:),S1.icaact(59,:)
+S1SO = S1.icaact(61,:)
+
+S1ALLFOOOF = {S1AF, S1SF, S1SFC, S1SC, S1SFT, S1ST, S1STP, S1SCP, S1SP, S1SPO, S1SO}
+for o = 1:length(S1ALLFOOOF)
+    [psd, freqs] = pwelch(S1ALLFOOOF{o}, 500, [], [], s_rate);
+    freqs = freqs';
+    psd = psd';
+    settings = struct();  % Use defaults
+    f_range = [1, 40];
+    fooof_results{o} = fooof(freqs, psd, f_range, settings, true)
+    fooof_plot(fooof_results{o})
+    title(sprintf('S1ALLFOOOF%d',o))
+end
+
+%selecting passive task contralateral electrodes (right) for event 1
+S1CRAF = S1.icaact(23,:),S1.icaact(24,:),S1.icaact(28,:),S1.icaact(29,:)
+S1CRF = S1.icaact(34,:),S1.icaact(35,:),S1.icaact(36,:),S1.icaact(37,:),S1.icaact(38,:)
+S1CRFC = S1.icaact(4,:),S1.icaact(5,:),S1.icaact(6,:),S1.icaact(7,:)
+S1CRC = S1.icaact(11,:),S1.icaact(12,:),S1.icaact(13,:),S1.icaact(14,:)
+S1CRFT = S1.icaact(40,:)
+S1CRT = S1.icaact(42,:),S1.icaact(44,:)
+S1CRTP = S1.icaact(46,:)
+S1CRCP = S1.icaact(18,:),S1.icaact(19,:),S1.icaact(20,:),S1.icaact(21,:)
+S1CRP = S1.icaact(51,:),S1.icaact(52,:),S1.icaact(53,:),S1.icaact(54,:),S1.icaact(55,:)
+S1CRPO = S1.icaact(58,:),S1.icaact(59,:)
+S1CRO = S1.icaact(61,:)
+
+S1RightFOOOF = {S1CRAF, S1CRF, S1CRFC, S1CRC, S1CRFT, S1CRT, S1CRTP, S1CRCP, S1CRP, S1CRPO, S1CRO}
+for f = 1:length(S1RightFOOOF)
+    [psd, freqs] = pwelch(S1RightFOOOF{f}, 500, [], [], s_rate);
+    freqs = freqs';
+    psd = psd';
+    settings = struct();  % Use defaults
+    f_range = [1, 40];
+    fooof_results{f} = fooof(freqs, psd, f_range, settings, true)
+    fooof_plot(fooof_results{f})
+    title(sprintf('S1RightFOOOF%d',f))
+end
+
+%selecting contralateral electrodes for passive S1 event  (left)
+S1CLAF = S1.icaact(22,:),S1.icaact(23,:),S1.icaact(25,:),S1.icaact(26,:),S1.icaact(27,:)
+S1CLF = S1.icaact(30,:),S1.icaact(31,:),S1.icaact(32,:),S1.icaact(33,:)
+SCLFC = S1.icaact(1,:),S1.icaact(2,:),S1.icaact(3,:),S1.icaact(4,:)
+S1CLC = S1.icaact(8,:),S1.icaact(9,:),S1.icaact(10,:),S1.icaact(11,:)
+S1CLFT = S1.icaact(39,:)
+S1CLT = S1.icaact(43,:),S1.icaact(41,:)
+S1CLTP = S1.icaact(45,:)
+S1CLCP = S1.icaact(15,:),S1.icaact(16,:),S1.icaact(17,:),S1.icaact(18,:)
+S1CLP = S1.icaact(47,:),S1.icaact(48,:),S1.icaact(49,:),S1.icaact(50,:),S1.icaact(51,:)
+S1CLPO = S1.icaact(56,:),S1.icaact(57,:)
+S1CLO = S1.icaact(61,:)
+
+S1LeftFOOOF = {S1CLAF, S1CLF, SCLFC, S1CLC, S1CLFT, S1CLT, S1CLTP, S1CLCP, S1CLP, S1CLPO, S1CLO}
+for e = 1:length(S1LeftFOOOF)
+    [psd, freqs] = pwelch(S1LeftFOOOF{e}, 500, [], [], s_rate);
+    freqs = freqs';
+    psd = psd';
+    settings = struct();  % Use defaults
+    f_range = [1, 40];
+    fooof_results{e} = fooof(freqs, psd, f_range, settings, true)
+    fooof_plot(fooof_results{e})
+    title(sprintf('S1LeftFOOOF%d',e))
+end
+
+
+
+%FOOOF S2
+%%selecting ALL electrodes for passive S2 event 
+S2AF = S2.icaact(22,:),S2.icaact(23,:),S2.icaact(24,:),S2.icaact(25,:),S2.icaact(26,:),S2.icaact(27,:),S2.icaact(28,:),S2.icaact(29,:)
+S2SF = S2.icaact(30,:),S2.icaact(31,:),S2.icaact(32,:),S2.icaact(33,:),S2.icaact(34,:),S2.icaact(35,:),S2.icaact(36,:),S2.icaact(37,:),S2.icaact(38,:)
+S2SFC = S2.icaact(1,:),S2.icaact(2,:),S2.icaact(3,:),S2.icaact(4,:),S2.icaact(5,:),S2.icaact(6,:),S2.icaact(7,:)
+S2SC = S2.icaact(8,:),S2.icaact(9,:),S2.icaact(10,:),S2.icaact(11,:),S2.icaact(12,:),S2.icaact(13,:),S2.icaact(14,:)
+S2SFT = S2.icaact(39,:),S2.icaact(40,:)
+S2ST = S2.icaact(43,:),S2.icaact(41,:),S2.icaact(42,:),S2.icaact(44,:)
+S2STP = S2.icaact(45,:),S2.icaact(46,:)
+S2SCP = S2.icaact(15,:),S2.icaact(16,:),S2.icaact(17,:),S2.icaact(18,:),S2.icaact(19,:),S2.icaact(20,:),S2.icaact(21,:)
+S2SP = S2.icaact(47,:),S2.icaact(48,:),S2.icaact(49,:),S2.icaact(50,:),S2.icaact(51,:),S2.icaact(52,:),S2.icaact(53,:),S2.icaact(54,:),S2.icaact(55,:)
+S2SPO = S2.icaact(56,:),S2.icaact(57,:),S2.icaact(58,:),S2.icaact(59,:)
+S2SO = S2.icaact(61,:)
+
+S2ALLFOOOF = {S2AF, S2SF, S2SFC, S2SC, S2SFT, S2ST, S2STP, S2SCP, S2SP, S2SPO, S2SO}
+for c = 1:length(S2ALLFOOOF)
+    [psd, freqs] = pwelch(S2ALLFOOOF{c}, 500, [], [], s_rate);
+    freqs = freqs';
+    psd = psd';
+    settings = struct();  % Use defaults
+    f_range = [1, 40];
+    fooof_results{c} = fooof(freqs, psd, f_range, settings, true)
+    fooof_plot(fooof_results{c})
+    title(sprintf('S2ALLFOOOF%d',c))
+end
+
+%selecting passive task contralateral electrodes (right) for event 2
+S2CRAF = S2.icaact(23,:),S2.icaact(24,:),S2.icaact(28,:),S2.icaact(29,:)
+S2CRF = S2.icaact(34,:),S2.icaact(35,:),S2.icaact(36,:),S2.icaact(37,:),S2.icaact(38,:)
+S2CRFC = S2.icaact(4,:),S2.icaact(5,:),S2.icaact(6,:),S2.icaact(7,:)
+S2CRC = S2.icaact(11,:),S2.icaact(12,:),S2.icaact(13,:),S2.icaact(14,:)
+S2CRFT = S2.icaact(40,:)
+S2CRT = S2.icaact(42,:),S2.icaact(44,:)
+S2CRTP = S2.icaact(46,:)
+S2CRCP = S2.icaact(18,:),S2.icaact(19,:),S2.icaact(20,:),S2.icaact(21,:)
+S2CRP = S2.icaact(51,:),S2.icaact(52,:),S2.icaact(53,:),S2.icaact(54,:),S2.icaact(55,:)
+S2CRPO = S2.icaact(58,:),S2.icaact(59,:)
+S2CRO = S2.icaact(61,:)
+
+S2RightFOOOF = {S2CRAF, S2CRF, S2CRFC, S2CRC, S2CRFT, S2CRT, S2CRTP, S2CRCP, S2CRP, S2CRPO, S2CRO}
+for d = 1:length(S2RightFOOOF)
+    [psd, freqs] = pwelch(S2RightFOOOF{d}, 500, [], [], s_rate);
+    freqs = freqs';
+    psd = psd';
+    settings = struct();  % Use defaults
+    f_range = [1, 40];
+    fooof_results{d} = fooof(freqs, psd, f_range, settings, true)
+    fooof_plot(fooof_results{d})
+    title(sprintf('S2RightFOOOF%d',d))
+end
+
+%selecting contralateral electrodes for passive S2 event  (left)
+S2CLAF = S2.icaact(22,:),S2.icaact(23,:),S2.icaact(25,:),S2.icaact(26,:),S2.icaact(27,:)
+S2CLF = S2.icaact(30,:),S2.icaact(31,:),S2.icaact(32,:),S2.icaact(33,:)
+S2LFC = S2.icaact(1,:),S2.icaact(2,:),S2.icaact(3,:),S2.icaact(4,:)
+S2CLC = S2.icaact(8,:),S2.icaact(9,:),S2.icaact(10,:),S2.icaact(11,:)
+S2CLFT = S2.icaact(39,:)
+S2CLT = S2.icaact(43,:),S2.icaact(41,:)
+S2CLTP = S2.icaact(45,:)
+S2CLCP = S2.icaact(15,:),S2.icaact(16,:),S2.icaact(17,:),S2.icaact(18,:)
+S2CLP = S2.icaact(47,:),S2.icaact(48,:),S2.icaact(49,:),S2.icaact(50,:),S2.icaact(51,:)
+S2CLPO = S2.icaact(56,:),S2.icaact(57,:)
+S2CLO = S2.icaact(61,:)
+
+S2LeftFOOOF = {S2CLAF, S2CLF, S2LFC, S2CLC, S2CLFT, S2CLT, S2CLTP, S2CLCP, S2CLP, S2CLPO, S2CLO}
+for v = 1:length(S2LeftFOOOF)
+    [psd, freqs] = pwelch(S2LeftFOOOF{v}, 500, [], [], s_rate);
+    freqs = freqs';
+    psd = psd';
+    settings = struct();  % Use defaults
+    f_range = [1, 40];
+    fooof_results{v} = fooof(freqs, psd, f_range, settings, true)
+    fooof_plot(fooof_results{v})
+    title(sprintf('S2LeftFOOOF%d',v))
+end
+
+
+
+%FOOOF S4
+%%selecting ALL electrodes for passive S4 event 
+S4SAF = S4.icaact(22,:),S4.icaact(23,:),S4.icaact(24,:),S4.icaact(25,:),S4.icaact(26,:),S4.icaact(27,:),S4.icaact(28,:),S4.icaact(29,:)
+S4SF = S4.icaact(30,:),S4.icaact(31,:),S4.icaact(32,:),S4.icaact(33,:),S4.icaact(34,:),S4.icaact(35,:),S4.icaact(36,:),S4.icaact(37,:),S4.icaact(38,:)
+S4SFC = S4.icaact(1,:),S4.icaact(2,:),S4.icaact(3,:),S4.icaact(4,:),S4.icaact(5,:),S4.icaact(6,:),S4.icaact(7,:)
+S4SC = S4.icaact(8,:),S4.icaact(9,:),S4.icaact(10,:),S4.icaact(11,:),S4.icaact(12,:),S4.icaact(13,:),S4.icaact(14,:)
+S4SFT = S4.icaact(39,:),S4.icaact(40,:)
+S4ST = S4.icaact(43,:),S4.icaact(41,:),S4.icaact(42,:),S4.icaact(44,:)
+S4STP = S4.icaact(45,:),S4.icaact(46,:)
+S4SCP = S4.icaact(15,:),S4.icaact(16,:),S4.icaact(17,:),S4.icaact(18,:),S4.icaact(19,:),S4.icaact(20,:),S4.icaact(21,:)
+S4SP = S4.icaact(47,:),S4.icaact(48,:),S4.icaact(49,:),S4.icaact(50,:),S4.icaact(51,:),S4.icaact(52,:),S4.icaact(53,:),S4.icaact(54,:),S4.icaact(55,:)
+S4SPO = S4.icaact(56,:),S4.icaact(57,:),S4.icaact(58,:),S4.icaact(59,:)
+S4SO = S4.icaact(61,:)
+
+S4ALLFOOOF = {S4SAF, S4SF, S4SFC, S4SC, S4SFT, S4ST, S4STP, S4SCP, S4SP, S4SPO, S4SO}
+for x = 1:length(S4ALLFOOOF)
+    [psd, freqs] = pwelch(S4ALLFOOOF{x}, 500, [], [], s_rate);
+    freqs = freqs';
+    psd = psd';
+    settings = struct();  % Use defaults
+    f_range = [1, 40];
+    fooof_results{x} = fooof(freqs, psd, f_range, settings, true)
+    fooof_plot(fooof_results{x})
+    title(sprintf('S4ALLFOOOF%d',x))
+end
+
+%selecting contralateral electrodes for passive S4 event  (Right)
+S4CRAF = S4.icaact(23,:),S4.icaact(24,:),S4.icaact(28,:),S4.icaact(29,:)
+S4CRF = S4.icaact(34,:),S4.icaact(35,:),S4.icaact(36,:),S4.icaact(37,:),S4.icaact(38,:)
+S4CRFC = S4.icaact(4,:),S4.icaact(5,:),S4.icaact(6,:),S4.icaact(7,:)
+S4CRC = S4.icaact(11,:),S4.icaact(12,:),S4.icaact(13,:),S4.icaact(14,:)
+S4CRFT = S4.icaact(40,:)
+S4CRT = S4.icaact(42,:),S4.icaact(44,:)
+S4CRTP = S4.icaact(46,:)
+S4CRCP = S4.icaact(18,:),S4.icaact(19,:),S4.icaact(20,:),S4.icaact(21,:)
+S4CRP = S4.icaact(51,:),S4.icaact(52,:),S4.icaact(53,:),S4.icaact(54,:),S4.icaact(55,:)
+S4CRPO = S4.icaact(58,:),S4.icaact(59,:)
+S4CRO = S4.icaact(61,:)
+
+S4RightFOOOF = {S4CRAF, S4CRF, S4CRFC, S4CRC, S4CRFT, S4CRT, S4CRTP, S4CRCP, S4CRP, S4CRPO, S4CRO}
+for q = 1:length(S4RightFOOOF)
+    [psd, freqs] = pwelch(S4RightFOOOF{q}, 500, [], [], s_rate);
+    freqs = freqs';
+    psd = psd';
+    settings = struct();  % Use defaults
+    f_range = [1, 40];
+    fooof_results{q} = fooof(freqs, psd, f_range, settings, true)
+    fooof_plot(fooof_results{q})
+    title(sprintf('S4RightFOOOF%d',q))
+end
+
+%selecting contralateral electrodes for passive S4 event  (left)
+S4CLAF = S4.icaact(22,:),S4.icaact(23,:),S4.icaact(25,:),S4.icaact(26,:),S4.icaact(27,:)
+S4CLF = S4.icaact(30,:),S4.icaact(31,:),S4.icaact(32,:),S4.icaact(33,:)
+S4CLFC = S4.icaact(1,:),S4.icaact(2,:),S4.icaact(3,:),S4.icaact(4,:)
+S4CLC = S4.icaact(8,:),S4.icaact(9,:),S4.icaact(10,:),S4.icaact(11,:)
+S4CLFT = S4.icaact(39,:)
+S4CLT = S4.icaact(43,:),S4.icaact(41,:)
+S4CLTP = S4.icaact(45,:)
+S4CLCP = S4.icaact(15,:),S4.icaact(16,:),S4.icaact(17,:),S4.icaact(18,:)
+S4CLP = S4.icaact(47,:),S4.icaact(48,:),S4.icaact(49,:),S4.icaact(50,:),S4.icaact(51,:)
+S4CLPO = S4.icaact(56,:),S4.icaact(57,:)
+S4CLO = S4.icaact(61,:)
+
+S4LeftFOOOF = {S4CLAF, S4CLF, S4CLFC, S4CLC, S4CLFT, S4CLT, S4CLTP, S4CLCP, S4CLP, S4CLPO, S4CLO}
+for b = 1:length(S4LeftFOOOF)
+    [psd, freqs] = pwelch(S4LeftFOOOF{b}, 500, [], [], s_rate);
+    freqs = freqs';
+    psd = psd';
+    settings = struct();  % Use defaults
+    f_range = [1, 40];
+    fooof_results{b} = fooof(freqs, psd, f_range, settings, true)
+    fooof_plot(fooof_results{b})
+    title(sprintf('S4LeftFOOOF%d',b))
+end
