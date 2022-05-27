@@ -1,3 +1,50 @@
+%MERGREDSET 
+
+dir = '/Users/LysanneGroenewegen1/STUDIE/RM/Jaar 2/THESIS/MATLAB/OneDrive_1_1-3-2022'
+
+fnames = {'ANL_aaaaaaeb_1.vhdr' 'ANL_aaaaaaeb_2.vhdr' 'ANL_aaaaaaeb_3.vhdr'};
+
+for i = 1:length(fnames)
+   fprintf(' Loading file %s \n',fnames{i})
+   data(i) = pop_loadbv(fullfile(dir,fnames{i})); 
+end
+
+ALLEEG = pop_mergeset(data, [1:length(data)],1)
+
+%preprocessing
+
+%remove non channels
+ALLEEG = pop_select(ALLEEG, 'nochannel',{'P0','P1','P2'});
+   
+%remove bad channels
+ALLEEG = pop_clean_rawdata(ALLEEG, 'FlatlineCriterion',5,'ChannelCriterion',0.8,'LineNoiseCriterion',4,'Highpass',[0.25 0.75] ,'BurstCriterion','off','WindowCriterion','off','BurstRejection','off','Distance','Euclidian');
+
+%Pick the average reference electrode in this step 
+ALLEEG = pop_reref( ALLEEG, [],'interpchan',[]);
+
+%set the basic filter 1 - 40 
+ALLEEG = pop_eegfiltnew(ALLEEG, 'locutoff',1,'hicutoff',40,'plotfreqz',1);
+ALLEEG = eeg_checkset( ALLEEG );
+
+%Run the first ICA with default settings
+ALLEEG = pop_runica(ALLEEG, 'icatype', 'runica', 'extended',1,'pca',-1,'interrupt','on');
+
+%remove more bad components automatically 
+ALLEEG = pop_iclabel(ALLEEG, 'default');
+ALLEEG = pop_icflag(ALLEEG, [NaN NaN;0.9 1;0.9 1;NaN NaN;NaN NaN;NaN NaN;NaN NaN]);
+ALLEEG = pop_subcomp( ALLEEG, [12], 0);
+
+%look at the data, scroll data and spectral plots 
+ALLEEG = eeg_checkset( ALLEEG );
+     pop_eegplot( ALLEEG, 0, 1, 1);
+     figure; pop_spectopo(ALLEEG, 0, [0  3698679], 'EEG' , 'freq', [10], 'plotchan', 0, 'percent', 20, 'icacomps', [1:67], 'nicamaps', 5, 'freqrange',[2 25],'electrodes','off');
+
+%Remove bad channels more strictly 
+ALLEEG = pop_clean_rawdata(ALLEEG, 'FlatlineCriterion','off','ChannelCriterion','off','LineNoiseCriterion','off','Highpass','off','BurstCriterion',20,'WindowCriterion',0.25,'BurstRejection','on','Distance','Euclidian','WindowCriterionTolerances',[-Inf 7] );
+     ALLEEG = eeg_checkset( ALLEEG );
+     pop_eegplot( ALLEEG, 1, 1, 1);
+
+%OPTIONAL
 %FOOOF bilateral
 %selecting clusters of electrodes 
 AF = ALLEEG.icaact(22,:),ALLEEG.icaact(23,:),ALLEEG.icaact(24,:),ALLEEG.icaact(25,:),ALLEEG.icaact(26,:),ALLEEG.icaact(27,:),ALLEEG.icaact(28,:),ALLEEG.icaact(29,:)
@@ -23,28 +70,93 @@ for i = 1:length(BilateralFOOOF)
     fooof_results{i} = fooof(freqs, psd, f_range, settings, true)
 end
 
-%Events 
+
+%or global activity over the whole data
+s = 61
+GLOBALACT = ALLEEG.icaact(i,:)
+for i = 1:s
+end
+
+%fooof for global acivity 
+s_rate = 1000
+[psd, freqs] = pwelch(GLOBALACT, 500, [], [], s_rate);
+freqs = freqs';
+psd = psd';
+settings = struct();  % Use defaults
+f_range = [1, 40];
+global_fooof_results = fooof(freqs, psd, f_range, settings, true);
+fooof_plot(global_fooof_results)
+title(sprintf('Global fooof'))
+
+%Sperating the passive events from active data
 ALLEEGEVENTS = pop_rmdat( ALLEEG, {'S  1','S  2','S  4'},[-1 1] ,0);
 S1 = pop_rmdat( ALLEEG, {'S  1'},[-1 1] ,0);
 S2 = pop_rmdat( ALLEEG, {'S  2'},[-1 1] ,0); 
 S4 = pop_rmdat( ALLEEG, {'S  4'},[-1 1] ,0); 
 
-% Calculate a power spectrum with Welch's method
-s_rate = 1000
-[psd, freqs] = pwelch(ALLEEGEVENTS.data, 60, [], [], s_rate);
-[psd, freqs] = pwelch(S1.icaact, 500, [], [], s_rate);
+%Weights for all events
+s = 61
+ALLEVENTS = ALLEEGEVENTS.icaact(i,:)
+for i = 1:s
+end
 
-% Transpose, to make inputs row vectors
+% FOOOF
+s_rate = 1000
+[psd, freqs] = pwelch(ALLEVENTS, 500, [], [], s_rate);
 freqs = freqs';
 psd = psd';
-
-% FOOOF settings
 settings = struct();  % Use defaults
 f_range = [1, 40];
+global_fooof_results = fooof(freqs, psd, f_range, settings, true);
+fooof_plot(global_fooof_results)
+title(sprintf('ALLEVENTS'))
 
-% Run FOOOF
-fooof_results = fooof(freqs, psd, f_range, settings, true);
 
-% Print out the FOOOF Results
-fooof_results
-fooof_plot(fooof_results)
+%weights for separate events
+s = 61
+S1FOOOF = S1.icaact(i,:)
+for i = 1:s
+end
+
+s_rate = 1000
+[psd, freqs] = pwelch(S1FOOOF, 500, [], [], s_rate);
+freqs = freqs';
+psd = psd';
+settings = struct();  % Use defaults
+f_range = [1, 40];
+global_fooof_results = fooof(freqs, psd, f_range, settings, true);
+fooof_plot(global_fooof_results)
+title(sprintf('S1FOOOF'))
+
+
+%weights for separate events
+s = 61
+S2FOOOF = S2.icaact(i,:)
+for i = 1:s
+end
+
+s_rate = 1000
+[psd, freqs] = pwelch(S2FOOOF, 500, [], [], s_rate);
+freqs = freqs';
+psd = psd';
+settings = struct();  % Use defaults
+f_range = [1, 40];
+global_fooof_results = fooof(freqs, psd, f_range, settings, true);
+fooof_plot(global_fooof_results)
+title(sprintf('S2FOOOF'))
+
+%weights for separate events
+s = 61
+S4FOOOF = S4.icaact(i,:)
+for i = 1:s
+end
+
+s_rate = 1000
+[psd, freqs] = pwelch(S4FOOOF, 500, [], [], s_rate);
+freqs = freqs';
+psd = psd';
+settings = struct();  % Use defaults
+f_range = [1, 40];
+global_fooof_results = fooof(freqs, psd, f_range, settings, true);
+fooof_plot(global_fooof_results)
+title(sprintf('S4FOOOF'))
