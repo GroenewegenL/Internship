@@ -160,3 +160,7 @@ f_range = [1, 40];
 global_fooof_results = fooof(freqs, psd, f_range, settings, true);
 fooof_plot(global_fooof_results)
 title(sprintf('S4FOOOF'))
+
+%fooof for active dataset 
+
+
