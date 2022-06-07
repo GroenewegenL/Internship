@@ -58,6 +58,9 @@ CP = ALLEEG.data(15,:),ALLEEG.data(16,:),ALLEEG.data(17,:),ALLEEG.data(18,:),ALL
 P = ALLEEG.data(47,:),ALLEEG.data(48,:),ALLEEG.data(49,:),ALLEEG.data(50,:),ALLEEG.data(51,:),ALLEEG.data(52,:),ALLEEG.data(53,:),ALLEEG.data(54,:),ALLEEG.data(55,:)
 PO = ALLEEG.data(56,:),ALLEEG.data(57,:)
 
+,ALLEEG.data(58,:),ALLEEG.data(59,:)
+O = ALLEEG.data(61,:)
+
 %check set
 pop_eegplot( EEG, 1, 1, 1);
 
@@ -175,110 +178,95 @@ for ALL = 1:length(ALLSFOOOF)
     title(sprintf('ALLSFOOOF%d',ALL))
 end
 
-%S1
-%frontal
-FrontalElectrode31 = S1.data(31,:)
-FrontalElectrode35 = S1.data(35,:)
+%frontal electrode 31
+ThumbFrontalElectrode31 = S1.data(31,:)
+IndexFrontalElectrode31 = S2.data(31,:)
+PinkyFrontalElectrode31 = S4.data(31,:)
 
-%central 
-CentralElectrode1 = S1.data(1,:)
-CentralElectrode61 = S1.data(61,:)
-
-%sensorimotor right
-SensoriElectrode26 = S1.data(26,:)
-SensoriElectrode23 = S1.data(23,:)
-SensoriElectrode25 = S1.data(25,:)
-
-%sensorimotor left
-SensoriElectrode7 = S1.data(7,:)
-SensoriElectrode8 = S1.data(8,:)
-SensoriElectrode9 = S1.data(9,:)
-
-OccipitalElectrode51 = S1.data(51,:)
-OccipitalElectrode46 = S1.data(46,:)
-
-
-S1FOOOF = {FrontalElectrode31, CentralElectrode61, SensoriElectrode26, SensoriElectrode7, OccipitalElectrode51}
-for ss1 = 1:length(S1FOOOF)
-    [psd, freqs] = pwelch(S1FOOOF{ss1}, 1000, [], [], s_rate);
+s_rate = 1000
+Frontal31 = {ThumbFrontalElectrode31, IndexFrontalElectrode31, PinkyFrontalElectrode31}
+for f31  = 1:length(Frontal31)
+    [psd, freqs] = pwelch(Frontal31{f31}, 1000, [], [], s_rate);
     freqs = freqs';
     psd = psd';
     settings = struct();  % Use defaults
     f_range = [1, 40];
-    S1Result{ss1} = fooof(freqs, psd, f_range, settings, true)
-    fooof_plot(S1Result{ss1})
-    title(sprintf('S1FOOOF%d',ss1))
+    F31Result{f31} = fooof(freqs, psd, f_range, settings, true)
+    fooof_plot(F31Result{f31})
+    title(sprintf('F31FOOOF%d',f31))
 end
 
-%Frontal
-FrontalElectrode31 = S2.data(31,:)
-FrontalElectrode35 = S2.data(35,:)
+%central electrode 61
+ThumbcentralElectrode61 = S1.data(61,:)
+IndexcentralElectrode61 = S2.data(61,:)
+PinkycentralElectrode61 = S4.data(61,:)
 
-%central 
-CentralElectrode1 = S2.data(1,:)
-CentralElectrode61 = S2.data(61,:)
-
-%sensorimotor right
-SensoriElectrode26 = S2.data(26,:)
-SensoriElectrode23 = S2.data(23,:)
-SensoriElectrode25 = S2.data(25,:)
-
-%sensorimotor left
-SensoriElectrode7 = S2.data(7,:)
-SensoriElectrode8 = S2.data(8,:)
-SensoriElectrode9 = S2.data(9,:)
-
-%occipital
-OccipitalElectrode51 = S2.data(51,:)
-OccipitalElectrode46 = S2.data(46,:)
-
-S2FOOOF = {FrontalElectrode31, CentralElectrode61, SensoriElectrode26, SensoriElectrode7, OccipitalElectrode51}
-for ss2 = 1:length(S2FOOOF)
-    [psd, freqs] = pwelch(S2FOOOF{ss2}, 1000, [], [], s_rate);
+s_rate = 1000
+Central61 = {ThumbcentralElectrode61, IndexcentralElectrode61, PinkycentralElectrode61}
+for c61  = 1:length(Central61)
+    [psd, freqs] = pwelch(Central61{c61}, 1000, [], [], s_rate);
     freqs = freqs';
     psd = psd';
     settings = struct();  % Use defaults
     f_range = [1, 40];
-    S2Result{ss2} = fooof(freqs, psd, f_range, settings, true)
-    fooof_plot(S2Result{ss2})
-    title(sprintf('S2FOOOF%d',ss2))
+    C61Result{c61} = fooof(freqs, psd, f_range, settings, true)
+    fooof_plot(C61Result{c61})
+    title(sprintf('C61FOOOF%d',c61))
 end
 
-%S4
-%frontal
-FrontalElectrode31 = S4.data(31,:)
-FrontalElectrode35 = S4.data(35,:)
+%sensori electrode 26
+ThumbSensoriElectrode26 = S1.data(26,:)
+IndexSensoriElectrode26 = S2.data(26,:)
+PinkySensoriElectrode26 = S4.data(26,:)
 
-%central 
-CentralElectrode1 = S4.data(1,:)
-CentralElectrode61 = S4.data(61,:)
-
-%sensorimotor right
-SensoriElectrode26 = S4.data(26,:)
-SensoriElectrode23 = S4.data(23,:)
-SensoriElectrode25 = S4.data(25,:)
-
-%sensorimotor left
-SensoriElectrode7 = S4.data(7,:)
-SensoriElectrode8 = S4.data(8,:)
-SensoriElectrode9 = S4.data(9,:)
-
-%occipital
-OccipitalElectrode51 = S4.data(51,:)
-OccipitalElectrode46 = S4.data(46,:)
-
-S4FOOOF = {FrontalElectrode31, CentralElectrode61, SensoriElectrode26, SensoriElectrode7, OccipitalElectrode51}
-for ss4 = 1:length(S4FOOOF)
-    [psd, freqs] = pwelch(S4FOOOF{ss4}, 1000, [], [], s_rate);
+s_rate = 1000
+Sensori26 = {ThumbSensoriElectrode26, IndexSensoriElectrode26, PinkySensoriElectrode26}
+for s26  = 1:length(Sensori26)
+    [psd, freqs] = pwelch(Sensori26{s26}, 1000, [], [], s_rate);
     freqs = freqs';
     psd = psd';
     settings = struct();  % Use defaults
     f_range = [1, 40];
-    S4Result{ss4} = fooof(freqs, psd, f_range, settings, true)
-    fooof_plot(S4Result{ss4})
-    title(sprintf('S4FOOOF%d',ss4))
+    S26Result{s26} = fooof(freqs, psd, f_range, settings, true)
+    fooof_plot(S26Result{s26})
+    title(sprintf('S26FOOOF%d',s26))
 end
 
+%sensori electrode 7 
+ThumbSensoriElectrode7 = S1.data(7,:)
+IndexSensoriElectrode7 = S2.data(7,:)
+PinkySensoriElectrode7 = S4.data(7,:)
+
+s_rate = 1000
+Sensori7 = {ThumbSensoriElectrode7, IndexSensoriElectrode7, PinkySensoriElectrode7}
+for s7  = 1:length(Sensori7)
+    [psd, freqs] = pwelch(Sensori7{s7}, 1000, [], [], s_rate);
+    freqs = freqs';
+    psd = psd';
+    settings = struct();  % Use defaults
+    f_range = [1, 40];
+    S7Result{s7} = fooof(freqs, psd, f_range, settings, true)
+    fooof_plot(S7Result{s7})
+    title(sprintf('S7FOOOF%d',s7))
+end
+
+%Occipital electrode 51
+ThumbOccipitalElectrode51 = S1.data(51,:)
+IndexOccipitalElectrode51 = S2.data(51,:)
+PinkyOccipitalElectrode51 = S4.data(51,:)
+
+s_rate = 1000
+Occipital51 = {ThumbOccipitalElectrode51, IndexOccipitalElectrode51, PinkyOccipitalElectrode51}
+for o51  = 1:length(Occipital51)
+    [psd, freqs] = pwelch(Occipital51{o51}, 1000, [], [], s_rate);
+    freqs = freqs';
+    psd = psd';
+    settings = struct();  % Use defaults
+    f_range = [1, 40];
+    o51Result{o51} = fooof(freqs, psd, f_range, settings, true)
+    fooof_plot(o51Result{o51})
+    title(sprintf('o51FOOOF%d',o51))
+end
 
 %check distribution of exponents
 figure
@@ -294,7 +282,25 @@ hist(S2Result{1,4}.ap_fit)
 figure
 hist(S4Result{1,3}.ap_fit)
 hold on
-hist(S4Result{1,4}.ap_fit)
+hist(S4Result{1,1}.ap_fit)
+
+%Thumb
+% exponent of thumb
+Slope_ALLthumb = {F31Result{1,1}.ap_fit, C61Result{1,1}.ap_fit, S26Result{1,1}.ap_fit, S7Result{1,1}.ap_fit,  o51Result{1,1}.ap_fit}
+%offset of thumb
+Offset_ALLThumb = {F31Result{1,1}.aperiodic_params(1,1), C61Result{1,1}. aperiodic_params(1,1),  S26Result{1,1}. aperiodic_params(1,1), S7Result{1,1}. aperiodic_params(1,1), o51Result{1,1}. aperiodic_params(1,1)}
+
+%exponent for index
+Slope_ALLindex = {F31Result{1,2}.ap_fit, C61Result{1,2}.ap_fit, S26Result{1,2}.ap_fit, S7Result{1,2}.ap_fit, o51Result{1,2}.ap_fit}
+%offset for index
+Offset_ALLindex = {F31Result{1,2}.aperiodic_params(1,1), C61Result{1,2}. aperiodic_params(1,1),  S26Result{1,2}. aperiodic_params(1,1), S7Result{1,2}. aperiodic_params(1,1), o51Result{1,2}. aperiodic_params(1,1)}
+
+%exponent for Pinky 
+Slope_ALLpinky = {F31Result{1,3}.ap_fit, C61Result{1,3}.ap_fit, S26Result{1,3}.ap_fit, S7Result{1,3}.ap_fit, o51Result{1,3}.ap_fit}
+%offset for index
+Offset_ALLpinky = {F31Result{1,3}.aperiodic_params(1,1), C61Result{1,3}. aperiodic_params(1,1),  S26Result{1,3}. aperiodic_params(1,1), S7Result{1,3}. aperiodic_params(1,1), o51Result{1,3}. aperiodic_params(1,1)}
+
+
 
 
 
